@@ -1,0 +1,128 @@
+FUNCTION_BLOCK main
+
+VAR_INPUT
+    velocity : REAL;
+    top_distance : REAL;
+    bottom_distance : REAL;
+END_VAR
+VAR_OUTPUT
+    acceleration : REAL;
+END_VAR
+
+FUZZIFY velocity
+    TERM extreme_up := (2.25, 0) (2.75, 1) (5, 1);
+    TERM fast_up := (1.25, 0) (1.5, 0.5) (1.75, 1) (2.25, 1) (2.5, 0.5) (2.75, 0);
+    TERM medium_up := (0.25, 0) (0.5, 0.5) (0.75, 1) (1.25, 1) (1.5, 0.5) (1.75, 0);
+    TERM slow := (-0.75, 0) (-0.5, 0.5) (-0.25, 1) (0.25, 1) (0.5, 0.5) (0.75, 0);
+    TERM medium_down := (-1.75, 0) (-1.5, 0.5) (-1.25, 1) (-0.75, 1) (-0.5, 0.5) (-0.25, 0);
+    TERM fast_down := (-2.75, 0) (-2.5, 0.5) (-2.25, 1) (-2, 1) (-1.75, 1) (-1.5, 0.5) (-1.25, 0);
+    TERM extreme_down := (-5, 1) (-2.75, 1) (-2.25, 0);
+END_FUZZIFY
+
+FUZZIFY top_distance
+    TERM far := (95, 0) (105, 1) (170, 1);
+    TERM optimal := (50, 0) (60, 1) (95, 1) (105, 0);
+    TERM close := (15, 0) (25, 1) (50, 1) (60, 0);
+    TERM critical := (0, 1) (15, 1) (25, 0);
+END_FUZZIFY
+
+FUZZIFY bottom_distance
+    TERM far := (95, 0) (105, 1) (170, 1);
+    TERM optimal := (50, 0) (60, 1) (95, 1) (105, 0);
+    TERM close := (15, 0) (25, 1) (50, 1) (60, 0);
+    TERM critical := (0, 1) (15, 1) (25, 0);
+END_FUZZIFY
+
+DEFUZZIFY acceleration
+    TERM strong_up := (1.5, 0) (1.75, 1) (2.25, 1) (2.5, 0);
+    TERM medium_up := (0.75, 0) (1, 1) (1.5, 1) (1.75, 0);
+    TERM weak_up := (0.25, 0) (0.5, 1) (0.75, 1) (1, 0);
+    TERM none := (-0.5, 0) (-0.25, 1) (0.25, 1) (0.5, 0);
+    TERM weak_down := (-1, 0) (-0.75, 1) (-0.5, 1) (-0.25, 0);
+    TERM medium_down := (-1.75, 0) (-1.5, 1) (-1, 1) (-0.75, 0);
+    TERM strong_down := (-2.5, 0) (-2.25, 1) (-1.75, 1) (-1.5, 0);
+METHOD : COG;
+DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK first
+AND: MIN;
+ACT: MIN;
+
+RULE 0: IF top_distance IS far AND bottom_distance IS far AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 1: IF top_distance IS far AND bottom_distance IS far AND velocity IS fast_up THEN acceleration IS medium_down;
+RULE 2: IF top_distance IS far AND bottom_distance IS far AND velocity IS medium_up THEN acceleration IS weak_down;
+RULE 3: IF top_distance IS far AND bottom_distance IS far AND velocity IS slow THEN acceleration IS none;
+RULE 4: IF top_distance IS far AND bottom_distance IS far AND velocity IS medium_down THEN acceleration IS weak_up;
+RULE 5: IF top_distance IS far AND bottom_distance IS far AND velocity IS fast_down THEN acceleration IS medium_up;
+RULE 6: IF top_distance IS far AND bottom_distance IS far AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 7: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS extreme_up THEN acceleration IS medium_down;
+RULE 8: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS fast_up THEN acceleration IS weak_down;
+RULE 9: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS medium_up THEN acceleration IS none;
+RULE 10: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS slow THEN acceleration IS weak_up;
+RULE 11: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS medium_down THEN acceleration IS medium_up;
+RULE 12: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS fast_down THEN acceleration IS strong_up;
+RULE 13: IF top_distance IS far AND bottom_distance IS optimal AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 14: IF top_distance IS far AND bottom_distance IS close AND velocity IS extreme_up THEN acceleration IS weak_down;
+RULE 15: IF top_distance IS far AND bottom_distance IS close AND velocity IS fast_up THEN acceleration IS none;
+RULE 16: IF top_distance IS far AND bottom_distance IS close AND velocity IS medium_up THEN acceleration IS weak_up;
+RULE 17: IF top_distance IS far AND bottom_distance IS close AND velocity IS slow THEN acceleration IS medium_up;
+RULE 18: IF top_distance IS far AND bottom_distance IS close AND velocity IS medium_down THEN acceleration IS strong_up;
+RULE 19: IF top_distance IS far AND bottom_distance IS close AND velocity IS fast_down THEN acceleration IS strong_up;
+RULE 20: IF top_distance IS far AND bottom_distance IS close AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 21: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 22: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS fast_up THEN acceleration IS strong_down;
+RULE 23: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS medium_up THEN acceleration IS medium_down;
+RULE 24: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS slow THEN acceleration IS weak_down;
+RULE 25: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS medium_down THEN acceleration IS none;
+RULE 26: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS fast_down THEN acceleration IS weak_up;
+RULE 27: IF top_distance IS optimal AND bottom_distance IS far AND velocity IS extreme_down THEN acceleration IS medium_up;
+
+RULE 28: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 29: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS fast_up THEN acceleration IS medium_down;
+RULE 30: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS medium_up THEN acceleration IS weak_down;
+RULE 31: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS slow THEN acceleration IS none;
+RULE 32: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS medium_down THEN acceleration IS weak_up;
+RULE 33: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS fast_down THEN acceleration IS medium_up;
+RULE 34: IF top_distance IS optimal AND bottom_distance IS optimal AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 35: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS extreme_up THEN acceleration IS medium_down;
+RULE 36: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS fast_up THEN acceleration IS weak_down;
+RULE 37: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS medium_up THEN acceleration IS none;
+RULE 38: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS slow THEN acceleration IS weak_up;
+RULE 39: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS medium_down THEN acceleration IS medium_up;
+RULE 40: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS fast_down THEN acceleration IS strong_up;
+RULE 41: IF top_distance IS optimal AND bottom_distance IS close AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 42: IF top_distance IS close AND bottom_distance IS far AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 43: IF top_distance IS close AND bottom_distance IS far AND velocity IS fast_up THEN acceleration IS strong_down;
+RULE 44: IF top_distance IS close AND bottom_distance IS far AND velocity IS medium_up THEN acceleration IS strong_down;
+RULE 45: IF top_distance IS close AND bottom_distance IS far AND velocity IS slow THEN acceleration IS medium_down;
+RULE 46: IF top_distance IS close AND bottom_distance IS far AND velocity IS medium_down THEN acceleration IS weak_down;
+RULE 47: IF top_distance IS close AND bottom_distance IS far AND velocity IS fast_down THEN acceleration IS none;
+RULE 48: IF top_distance IS close AND bottom_distance IS far AND velocity IS extreme_down THEN acceleration IS weak_up;
+
+RULE 49: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 50: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS fast_up THEN acceleration IS strong_down;
+RULE 51: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS medium_up THEN acceleration IS medium_down;
+RULE 52: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS slow THEN acceleration IS weak_down;
+RULE 53: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS medium_down THEN acceleration IS none;
+RULE 54: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS fast_down THEN acceleration IS weak_up;
+RULE 55: IF top_distance IS close AND bottom_distance IS optimal AND velocity IS extreme_down THEN acceleration IS medium_up;
+
+RULE 56: IF top_distance IS close AND bottom_distance IS close AND velocity IS extreme_up THEN acceleration IS strong_down;
+RULE 57: IF top_distance IS close AND bottom_distance IS close AND velocity IS fast_up THEN acceleration IS medium_down;
+RULE 58: IF top_distance IS close AND bottom_distance IS close AND velocity IS medium_up THEN acceleration IS weak_down;
+RULE 59: IF top_distance IS close AND bottom_distance IS close AND velocity IS slow THEN acceleration IS none;
+RULE 60: IF top_distance IS close AND bottom_distance IS close AND velocity IS medium_down THEN acceleration IS weak_up;
+RULE 61: IF top_distance IS close AND bottom_distance IS close AND velocity IS fast_down THEN acceleration IS medium_up;
+RULE 62: IF top_distance IS close AND bottom_distance IS close AND velocity IS extreme_down THEN acceleration IS strong_up;
+
+RULE 63: IF top_distance IS critical THEN acceleration IS strong_down;
+RULE 64: IF bottom_distance IS critical THEN acceleration IS strong_up;
+
+END_RULEBLOCK
+END_FUNCTION_BLOCK
